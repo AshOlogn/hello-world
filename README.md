@@ -9,6 +9,7 @@ I am practicing using Github via the "Hello World" exercise.
 * C
 * CoffeeScript
 * C++
+* C#
 * CSS
 * Go
 * Haskell
@@ -16,6 +17,7 @@ I am practicing using Github via the "Hello World" exercise.
 * JavaScript
 * Kotlin
 * PHP
+* Perl
 * Python
 * Ruby
 * Rust
