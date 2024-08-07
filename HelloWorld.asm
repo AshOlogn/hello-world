@@ -2,7 +2,8 @@
 ; Build and run with this command: 
 ;  Linux 32-bit: nasm -felf32 HelloWorld.asm && ld -m elf_i386 HelloWorld.o && ./a.out
 ;  Linux 64-bit: nasm -felf64 HelloWorld.asm && ld HelloWorld.o && ./a.out
-;  Windows: TODO: need to write one for this os
+;  Windows 32-bit: nasm -f win32 HelloWorld.asm -o HelloWorld.obj && link /subsystem:console /entry:start HelloWorld.obj kernel32.lib
+;  Windows 64-bit: nasm -f win64 HelloWorld.asm -o HelloWorld.obj && link /subsystem:console /entry:start HelloWorld.obj kernel32.lib
 
 section .data
 hello:    db "Hello, world!", 0xa
@@ -47,7 +48,69 @@ _start:
   mov eax, 1   ; sys_exit
   int 0x80
 
+%elifidn __OUTPUT_FORMAT__, win32
+
+  ; Windows 32-bit hello world
+
+  extern _GetStdHandle@4
+  extern _WriteFile@20
+  extern _ExitProcess@4
+
+  section .data
+  handle dd 0
+  written dd 0
+
+  section .text
+
+  ; Get the handle to standard output
+  push -11
+  call _GetStdHandle@4
+  mov [handle], eax
+
+  ; Write the message to standard output
+  push 0
+  lea eax, [written]
+  push eax
+  push hellolen
+  push hello
+  push [handle]
+  call _WriteFile@20
+
+  ; Exit the process
+  push 0
+  call _ExitProcess@4
+
+%elifidn __OUTPUT_FORMAT__, win64
+
+  ; Windows 64-bit hello world
+
+  extern GetStdHandle
+  extern WriteFile
+  extern ExitProcess
+
+  section .data
+  handle dq 0
+  written dq 0
+
+  section .text
+
+  ; Get the handle to standard output
+  sub rsp, 28h
+  mov ecx, -11
+  call GetStdHandle
+  mov [handle], rax
+
+  ; Write the message to standard output
+  mov rcx, [handle]
+  lea rdx, [hello]
+  mov r8, hellolen
+  lea r9, [written]
+  call WriteFile
+
+  ; Exit the process
+  xor ecx, ecx
+  call ExitProcess
+
 %else
-  ; TODO: maybe write a windows equivalent?
   %error "Unsupported OS or binary format!!"
 %endif
